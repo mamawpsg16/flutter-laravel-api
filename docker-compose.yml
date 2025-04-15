@@ -1,0 +1,52 @@
+services:
+  app:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile
+    image: laravel-app
+    container_name: laravel-app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./docker/new-laravel-project:/var/www
+    networks:
+      - app-network
+    depends_on:
+      - db
+
+  nginx:
+    image: nginx:1.19-alpine
+    container_name: laravel-nginx
+    restart: unless-stopped
+    ports:
+      - "8888:80"  # Changed from 8000 to 8888
+    volumes:
+      - ./docker/new-laravel-project:/var/www
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+    networks:
+      - app-network
+    depends_on:
+      - app
+
+  db:
+    image: mysql:8.0
+    container_name: laravel-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: laravel
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_PASSWORD: password
+      MYSQL_USER: laravel
+    volumes:
+      - dbdata:/var/lib/mysql
+    networks:
+      - app-network
+    ports:
+      - "3307:3306"  # Changed from 3306 to 3307
+    
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  dbdata:
