@@ -48,6 +48,13 @@ class AuthController extends Controller
             ]);
         }
 
+
+        if (!$user->is_active) {
+            throw ValidationException::withMessages([
+                'email' => ['This account has been deactivated.'],
+            ]);
+        }
+
         // Revoke all existing tokens
         $user->tokens()->delete();
         
